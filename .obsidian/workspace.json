@@ -1,20 +1,24 @@
 {
   "main": {
-    "id": "e5db50cbad24cac0",
+    "id": "ecce8786fdde6ddc",
     "type": "split",
     "children": [
       {
-        "id": "df097fe110227c5d",
+        "id": "b7d2ccb348639f0f",
         "type": "tabs",
         "children": [
           {
-            "id": "9643645dcc29506d",
+            "id": "a487158273e5f971",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "Third year/320.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "320"
             }
           }
         ]
@@ -23,15 +27,15 @@
     "direction": "vertical"
   },
   "left": {
-    "id": "2a47e7683c64a883",
+    "id": "6ca59d9ba82d9c15",
     "type": "split",
     "children": [
       {
-        "id": "afb316ecc7c74591",
+        "id": "899302ecb5db2de3",
         "type": "tabs",
         "children": [
           {
-            "id": "52226b0d19635afd",
+            "id": "51dcbeb328eadfd6",
             "type": "leaf",
             "state": {
               "type": "file-explorer",
@@ -46,7 +50,7 @@
             }
           },
           {
-            "id": "b204fb6c37be6b4e",
+            "id": "9bf3f4440ee6efde",
             "type": "leaf",
             "state": {
               "type": "search",
@@ -63,7 +67,7 @@
             }
           },
           {
-            "id": "f6e33536115f2383",
+            "id": "5b2cebe64200679b",
             "type": "leaf",
             "state": {
               "type": "bookmarks",
@@ -79,22 +83,24 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 200,
+    "collapsed": true
   },
   "right": {
-    "id": "1f4ebf21379af133",
+    "id": "6e212eb4aef039cf",
     "type": "split",
     "children": [
       {
-        "id": "d18137ff793f13ef",
+        "id": "b9e8bd0674f7049a",
         "type": "tabs",
         "children": [
           {
-            "id": "b09869e5a2cdab63",
+            "id": "c250f557f9d23e29",
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
+                "file": "Third year/301.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -108,11 +114,12 @@
             }
           },
           {
-            "id": "8bbf3a644fadb46c",
+            "id": "2bba5364a6f073e9",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
               "state": {
+                "file": "Third year/301.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -121,7 +128,7 @@
             }
           },
           {
-            "id": "354b9046e6057b2e",
+            "id": "71b486fe8c192401",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -136,7 +143,7 @@
             }
           },
           {
-            "id": "be3a4940069694db",
+            "id": "45893796c564e530",
             "type": "leaf",
             "state": {
               "type": "all-properties",
@@ -150,11 +157,12 @@
             }
           },
           {
-            "id": "bf879a0d700858b7",
+            "id": "64ee86a116dda012",
             "type": "leaf",
             "state": {
               "type": "outline",
               "state": {
+                "file": "Third year/301.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -181,11 +189,22 @@
       "bases:Create new base": false
     }
   },
-  "active": "9643645dcc29506d",
+  "active": "a487158273e5f971",
   "lastOpenFiles": [
+    "Third year/320 - Copy.md",
+    "Third year/310 - Copy.md",
+    "Third year/301 - Copy.md",
     "Third year/320.md",
     "Third year/310.md",
     "Third year/301.md",
-    "Third year"
+    "README.md",
+    "Third year",
+    "Obsidian Vault-20261009T182917Z-1-001/Obsidian Vault/third year/320.md",
+    "Obsidian Vault-20261009T182917Z-1-001/Obsidian Vault/third year/310.md",
+    "Obsidian Vault-20261009T182917Z-1-001/Obsidian Vault/third year/301.md",
+    "Obsidian Vault-20261009T182917Z-1-001/Obsidian Vault/third year",
+    "Obsidian Vault-20261009T182917Z-1-001/Obsidian Vault",
+    "Obsidian Vault-20261009T182917Z-1-001",
+    "Untitled"
   ]
 }
