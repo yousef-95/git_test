@@ -1137,3 +1137,1179 @@ Think back to the two codes you wrote:
 1. **printf("Hello")**: This is **High-Level**. You are using a function that hides the complexity of buffering, formatting, and system calls. You don't know how the text gets to the screen; you just know that printf handles it.
     
 2. **write(1, "Hello", 13)**: This is **Low-Level thinking**. You are specifying the exact File Descriptor (1), the exact memory address of the string, and the exact number of bytes (13). You are acting more like a system programmer, thinking about how the kernel expects the data to be delivered.
+
+## page 22 :
+### 1. The OS as a Low-Level Hardware Layer
+
+**"Operating systems (OS) include a layer of low level system software that interacts with the hardware."**
+
+At the bottom of your computer is the **Hardware** (the CPU, the RAM sticks, the hard drive, the network card). Hardware is "dumb"—it only understands electrical signals and binary.
+
+If every program you wrote had to personally tell the hard drive's motor how to spin and the read-head where to move, programming would be nearly impossible. The OS provides a **Layer of Abstraction**. Instead of talking to the hardware, your program talks to the OS, and the OS talks to the hardware.
+
+The "core" of this layer is called the **Kernel**. The Kernel is the part of the OS that is always in memory and has **privileged access** to the hardware.
+
+### 2. Resource Management
+
+**"For example, OS manages the hard disk, the memory, and the interaction with the CPU."**
+
+The OS acts as a "Manager" or "Referee" for three critical resources:
+
+- **Memory (RAM):** The OS decides which program gets which part of the RAM. It ensures that Program A cannot read or write into the memory of Program B (which is why you get a "Segmentation Fault" if you try).
+    
+- **Hard Disk:** The OS manages the "File System." It keeps track of where a file actually starts and ends on the physical disk so you can just refer to it by a name like document.txt.
+    
+- **CPU:** The OS manages **Scheduling**. Since you might have 50 programs open but only 4 or 8 CPU cores, the OS decides who gets to use the CPU right now and for how many milliseconds.
+    
+
+### 3. Program Lifecycle and Services
+
+**"Operating systems are responsible for loading programs into memory and providing all the necessary services for them to run."**
+
+A program on your hard drive is just a dead file (an "executable"). To make it "come alive," the OS performs several steps:
+
+1. **Loading:** The OS reads the executable file from the disk and copies the code into a fresh area of RAM.
+    
+2. **Setup:** The OS sets up the **Stack** (for local variables) and the **Heap** (for dynamic memory), as you will see in later slides.
+    
+3. **Execution:** The OS tells the CPU to start executing the first instruction of the program.
+    
+
+Once the program is running, it will inevitably need "services"—like printing text to the screen or getting the current time. The OS provides these services as a utility.
+
+### 4. The Gateway: System Calls
+
+**"User programs interact with the operating system through the system call functions."**
+
+This is the most important point for your course. Because the OS has privileged access to the hardware, it cannot let a User Program just "jump" into the Kernel whenever it wants. That would be a massive security hole (a virus could simply tell the OS to "delete everything on the disk").
+
+Therefore, the OS creates a **Secure Gateway**.
+
+- The User Program cannot touch the hardware.
+    
+- The User Program cannot touch the Kernel's memory.
+    
+- The **ONLY** way a program can ask the OS to do something is by using a **System Call**.
+    
+
+As you learned in slides 13–20, a system call is essentially a "request form." The program fills out the request in registers, triggers a **Trap** (int $0x80), and the OS decides if the request is legal before performing it.
+
+---
+
+### Summary Visual Logic
+
+If you were to draw this slide, it would look like a sandwich:
+
+**[ User Program ]** **←** Requests a service via a System Call **→** 
+**[ Operating System (Kernel) ]** **←** Translates request to hardware signals **→**  
+**[ Physical Hardware ]** **←** Executes the physical action **→**
+
+
+## page 23 24 :
+### Slide 23: How does OS manage program executions?
+
+This slide introduces one of the most fundamental concepts in computer science: the difference between a **Program** and a **Process**.
+
+#### 1. Program vs. Process
+
+To understand this, you have to distinguish between "static" and "dynamic."
+
+- **A Program** is a **static** entity. It is just a file sitting on your hard drive (like chrome.exe or main.out). It does nothing; it is just a collection of bytes.
+    
+- **A Process** is a **dynamic** entity. It is a "unit of program execution." When you double-click a program, the OS "activates" it. It loads the code into RAM, assigns it resources, and gives it a life. That "living" version of the program is the **Process**.
+    
+
+#### 2. The Process as a Managed Entity
+
+The OS doesn't just "start" a process and forget about it. It must maintain a "folder" of information for every process it runs. This is what the slide means by **"maintained by OS with a set of data structures."** (In professional terms, this "folder" is called the **Process Control Block** or **PCB**).
+
+The OS needs to track these specific things for every single process:
+
+- **Program Code:** The actual machine instructions the CPU needs to execute.
+    
+- **Open Files:** If your program opened three text files, the OS must keep a list of those files so it knows where to read/write data.
+    
+- **The Stack:** This is a region of memory used for temporary data, such as function arguments, return addresses, and local variables.
+    
+- **The Heap:** This is a region of memory used for "dynamic" data—things you create while the program is running (for example, using malloc in C).
+    
+
+**Key Takeaway:** A process is not just the code; it is the **Code + the Memory (Stack/Heap) + the OS tracking data**.
+
+---
+
+### Slide 24: OS uses events to provide concurrency
+
+Now that we know what a process is, this slide explains how the OS runs many processes at the same time on a single CPU. This is called **Concurrency**.
+
+#### 1. Interleaved Execution
+
+If you have one CPU core but you are running Spotify, Chrome, and VS Code at the same time, it feels like they are all running simultaneously. However, on a single core, they actually aren't.
+
+The OS uses **Interleaving**. It lets Process A run for a tiny fraction of a second (e.g., 10 milliseconds), then it stops Process A and lets Process B run for 10 milliseconds, and then Process C. Because this happens thousands of times per second, it creates the **illusion** of concurrency.
+
+#### 2. The Role of the Kernel
+
+The only way the OS can force a process to stop so that another can start is by using **Kernel Code**.
+
+- **The Kernel** is the specialized part of the OS that lives in its own protected region of memory.
+    
+- It has **full access** to the entire machine's memory and hardware.
+    
+- The Kernel acts as the "Director." It uses a timer (a hardware interrupt) to "wake up" and decide: "Process A has had enough time; I am now going to switch the CPU to Process B."
+    
+
+#### 3. Explaining the Diagram
+
+The diagram visually represents this "switching" behavior over time.
+
+- **The Y-Axis (Time):** Time moves downward.
+    
+- **Horizontal Lines:** These represent the CPU executing a process.
+    
+- **The Gaps:** Notice how the line for Process A stops and then starts again later. During that gap, the CPU was busy executing Process B or C.
+    
+- **"Same or multiple cores":**
+    
+    - On a **single-core CPU**, the lines must be staggered (one after another) because only one thing can happen at a time.
+        
+    - On a **multi-core CPU**, the OS can run Process A on Core 1 and Process B on Core 2 at the exact same time. This is called **Parallelism**.
+        
+
+### Summary Connection
+
+- **Slide 23** tells us **WHAT** a process is (Code + Data Structures).
+    
+- **Slide 24** tells us **HOW** the OS manages these processes (Interleaving them via the Kernel to create concurrency).
+
+
+## page 25 26 :
+### Slide 25: The Concept of Context
+
+This slide asks: How can the OS stop Process A, run Process B, and then come back to Process A exactly where it left off?
+
+The answer is the **Context**. The context is a "snapshot" of everything the CPU needs to restart a process. If the OS doesn't save the context, the program will crash or produce wrong results when it resumes.
+
+**What exactly is in a "Context"?**
+
+1. **Registers:** These are the CPU's internal "scratchpads." If Process A was halfway through a math problem (e.g., it had the number 42 stored in register %eax), that value must be saved.
+    
+2. **The PC (Program Counter):** This is the "bookmark." It is the memory address of the very next instruction the CPU was supposed to execute.
+    
+3. **User's Stack:** This contains the local variables and the "return addresses" (where the program should go after a function finishes).
+    
+4. **The Page Table:** This is the most complex part. It is a map that tells the CPU: "Virtual Address X in this program actually lives at Physical RAM Address Y." Every process has its own unique map.
+    
+5. **Process/File Tables:** A list of which files the program has open and what its "PID" (Process ID) is.
+    
+
+**Analogy:** Imagine you are reading a book. Your "context" is your bookmark (PC), the notes you've scribbled in the margins (Registers), and the page you are on. If someone takes the book away, you can only resume if you have that bookmark and your notes.
+
+---
+
+### Slide 26: The Mechanism (The Context Switch)
+
+This slide explains the actual **action** of swapping processes. This is called a **Context Switch**.
+
+**The three-step process:**
+
+1. **Save:** The OS takes the current values in the CPU registers and the PC and writes them into a data structure in memory (the Process Control Block).
+    
+2. **Restore:** The OS looks up the "saved snapshot" of the next process and loads those values back into the CPU registers and the PC.
+    
+3. **Pass Control:** The CPU now has the new program's "bookmark" in the PC. It simply begins executing.
+    
+
+**Explaining the Diagram:**  
+Look at the flow: **User Code** **→** **Kernel Code  →** **User Code.**
+
+- A context switch **cannot** happen in "User Code." A user program cannot save its own context or change the CPU's page tables (that would be a security risk).
+    
+- Therefore, an event (like a timer interrupt) must first trigger an ECF to jump into the **Kernel**.
+    
+- The **Kernel** (the privileged OS code) performs the save/restore operations.
+    
+- Once the switch is complete, the Kernel jumps back out to the **User Code** of the new process.
+
+### 1. The Starting State: Process A is Running
+
+At the very top, the CPU is executing **Process A** in **User code**. The CPU's registers and Program Counter (PC) are currently loaded with Process A's data.
+
+### 2. The Trigger: The read System Call
+
+Process A reaches a line of code that says read(file, buffer, length).
+
+- **The Action:** As we learned in previous slides, read is a **System Call (a Trap)**.
+    
+- **The Transition:** The CPU immediately stops executing User code and jumps into **Kernel code**.
+    
+- **The Problem:** Reading from a disk is incredibly slow. If the CPU waited for the disk to find the data, it would waste millions of clock cycles doing nothing. This is called "blocking."
+    
+
+### 3. The First Context Switch (Process A → Process B)
+
+Because Process A is now "blocked" (waiting for the disk), the OS decides to use the CPU for something else so that no time is wasted.
+
+- **Saving A:** The OS saves the **Context** of Process A (the current values of its registers, its current PC, and its stack pointer) into memory.
+    
+- **Loading B:** The OS loads the saved **Context** of **Process B** into the CPU's registers and PC.
+    
+- **Switching:** The CPU jumps from Kernel code into **Process B's User code**.
+    
+- **Observation:** On the diagram, you see the line move horizontally from the "Process A" column to the "Process B" column. This movement is the **Context Switch**.
+    
+
+### 4. The "Gap": Process B Executes
+
+While the disk is still working in the background to find the data for Process A, the CPU is now fully occupied running **Process B**. Process B has no idea that Process A even exists; it just thinks it's its turn to run.
+
+### 5. The Wake-Up: The Disk Interrupt
+
+Suddenly, the hard drive finishes reading the data. It sends an electrical signal to the CPU's **Interrupt Pin** (which we studied on slide 9).
+
+- **The Action:** This is an **Asynchronous Interrupt**.
+    
+- **The Transition:** The CPU immediately pauses Process B and jumps back into **Kernel code** to handle the interrupt.
+    
+
+### 6. The Second Context Switch (Process B → Process A)
+
+The OS's Interrupt Handler realizes: "The data that Process A was waiting for is finally here!"
+
+- **Saving B:** The OS saves the current context of Process B (so it can return to it later).
+    
+- **Restoring A:** The OS retrieves the saved context of Process A that was stored way back in Step 3. It loads Process A's registers and its "bookmark" (the PC).
+    
+- **Resuming:** The CPU jumps back into **Process A's User code**.
+    
+
+### 7. Completion: Return from read
+
+Process A resumes exactly where it left off. To the programmer, it looks like the read() function just finished and returned the data. Process A has no idea it was "paused" and that Process B was running in the meantime.
+
+---
+
+### Summary of the Technical Logic
+
+If you are asked to explain this diagram on an exam, use these key points:
+
+1. **Efficiency:** The goal is to prevent the CPU from idling while waiting for slow I/O (the disk).
+    
+2. **Privilege:** The switch always happens in **Kernel code**, never in User code.
+    
+3. **The "Snapshot":** The transition between the columns (A → B and B → A) is only possible because the OS saves the **Context** (Registers, PC, Stack).
+    
+4. **Event-Driven:** The switch back to Process A is triggered by a **Hardware Interrupt** from the disk.
+
+## page 27 :
+### Slide 27: Private Address Space (Virtual Memory)
+
+This slide explains how the OS prevents processes from stealing or crashing each other's data.
+
+**The Big Secret: Virtual Memory**  
+In a modern computer, a program never knows where it "actually" is in the physical RAM sticks. Instead, the OS gives every process a **Private Address Space**.
+
+Every process thinks it has a huge, empty block of memory all to itself, starting from address 0. This is called a **Virtual Address**. The hardware (the MMU) and the OS translate these virtual addresses into real physical addresses on the fly.
+
+**The Memory Map (The Diagram):**  
+If you look at the memory layout from top to bottom:
+
+1. **Kernel Virtual Memory:** The top part of the address space is reserved for the OS. It is "invisible" to the user. If a program tries to touch this area, the CPU triggers a **Segmentation Fault (Abort)**.
+    
+2. **User Stack:** This is at the top of the user area. It grows **downward**. It stores local variables and function calls.
+    
+3. **Memory-Mapped Region:** This is where shared libraries (like the C library libc) are loaded so multiple programs can use them without wasting RAM.
+    
+4. **Run-time Heap:** This grows **upward**. This is the memory you get when you call malloc() in C.
+    
+5. **Read-Write/Read-Only Segments:** The bottom of the memory.
+    
+    - **.text**: The actual machine code instructions (Read-only).
+        
+    - **.data**: Your global variables (Read-write).
+        
+
+**Why is this important?**  
+Because Process A and Process B both have their own private maps. Process A might have data at virtual address 0x100, and Process B might also have data at virtual address 0x100. But because their **Page Tables** are different, those two identical virtual addresses point to two **different physical locations** in the RAM.
+
+**This is the ultimate security wall: Process A physically cannot "see" Process B's memory because it doesn't have a map to get there.**
+
+## fork :
+### Slide 28: How a program creates a process?
+
+This slide introduces the mechanism for process creation in Unix-like systems (Linux).
+
+#### 1. The fork() System Call
+
+In most languages, if you want a new process, you might think you "start" a new program. But in Linux, you use fork().  
+**fork() does not start a new program; it clones the current one.**
+
+When a process calls fork(), the OS creates a brand new process (the **Child**) that is an exact duplicate of the original process (the **Parent**). This includes a copy of the code, the variables, the stack, and the current state of the CPU.
+
+#### 2. The "Dual Return" (The most important part)
+
+The most confusing thing about fork() is that it is **called once, but it returns twice.**
+
+- It returns once in the **Parent** process.
+    
+- It returns once in the **Child** process.
+    
+
+Because the Child is a perfect clone, it starts executing from the exact same line where the fork() call happened. To prevent the Parent and Child from doing the exact same thing forever, fork() returns different values to each:
+
+- **To the Child:** fork() returns **0**.
+    
+- **To the Parent:** fork() returns the **PID (Process ID)** of the new child (a number greater than 0).
+    
+
+#### 3. Explaining the Code Example
+
+codeC
+
+```
+pid_t pid = fork(); 
+if (pid == 0) { 
+    printf("hello from child\n"); 
+} else { 
+    printf("hello from parent\n"); 
+}
+```
+
+- When fork() is called, the process splits.
+    
+- The **Child** looks at its pid variable, sees it is 0, and enters the if block.
+    
+- The **Parent** looks at its pid variable, sees it is a positive number (the child's ID), and enters the else block.
+    
+
+---
+
+### Slide 29: Creating a process: fork (The Details)
+
+This slide explains the "physics" of what happens to the memory and resources during a fork().
+
+#### 1. Exact Copy vs. Separate Address Space
+
+The slide states: **"Parent process creates the child, with an exact copy of its code"** but **"Parents and children have duplicate but separate address spaces."**
+
+This is a critical distinction. While the Child starts as a copy, it is not "linked" to the Parent. They are now two separate entities in the RAM. If the Child changes a variable, the Parent’s variable **does not change**.
+
+#### 2. Explaining the fork1() Example
+
+This code is designed to prove that the memory is separate:
+
+codeC
+
+```
+int x = 1;
+pid_t pid = fork();
+if (pid == 0) {
+    printf("Child has x = %d\n", ++x); // Child increments x to 2
+} else {
+    printf("Parent has x = %d\n", --x); // Parent decrements x to 0
+}
+printf("Process %d, x = %d\n", getpid(), x);
+```
+
+**What happens here:**
+
+1. Before the fork, there is one variable x with the value 1.
+    
+2. After fork(), there are now **two separate variables** named x in two different memory locations.
+    
+3. The Child increments its x to **2**.
+    
+4. The Parent decrements its x to **0**.
+    
+5. The final printf will show that the Child's x is 2 and the Parent's x is 0.
+    
+
+This proves that they do **not** share memory.
+
+#### 3. Shared File Descriptors
+
+While memory is separated, **Open Files** are shared.  
+**"Child, on creation, shares open file descriptors such as stdout with parent."**
+
+This is why both the Parent and the Child can print to the same terminal screen. They both have a "pointer" to the same output stream (stdout). If the Parent opens a file and then forks, the Child can read or write to that same file without having to open it again.
+
+---
+
+### Summary Table for Study
+
+|                       |                  |                       |                       |
+| --------------------- | ---------------- | --------------------- | --------------------- |
+| Feature               | Before fork()    | After fork() (Parent) | After fork() (Child)  |
+| **Process ID**        | One PID          | Original PID          | New unique PID        |
+| **Return Value**      | N/A              | Child's PID ( >0 )    | 0                     |
+| **Code/Instructions** | One copy         | Same code             | Same code             |
+| **Variables/Memory**  | One set of data  | Own copy (can change) | Own copy (can change) |
+| **Open Files**        | One set of files | Same files            | Same files            |
+
+## page 31 32 :
+### Slide 31: Exiting a Process
+
+This slide explains how a process "dies" and how to perform cleanup before it disappears.
+
+**1. exit(status)**  
+A process doesn't just stop; it must tell the OS how it ended. exit(0) tells the OS the program finished successfully. Any other number (like exit(1)) usually indicates an error.
+
+**2. atexit() (The Cleanup Register)**  
+Sometimes a program needs to do something before it dies (e.g., delete a temporary file or close a database connection). atexit() allows you to register a function to be called **automatically** just before the process terminates.
+
+**3. Example fork6() Analysis:**
+
+- atexit(cleanup) is called. This registers the cleanup function.
+    
+- fork() is called → the process splits into two.
+    
+- **Crucial Point:** Because the Child is a clone of the Parent, it **also inherits the registered cleanup function**.
+    
+- Both processes call exit(0).
+    
+- **Result:** The cleanup function runs **twice** (once for the parent, once for the child). You will see "cleaning up" printed twice.
+
+### The Answer: It copies ALL the code, but starts AFTER the fork().
+
+Imagine a video game. You have played for 2 hours and reached **Level 10**. You save your game.
+
+Now, imagine you "clone" your save file. You now have two identical save files. When you open the second save file, **do you have to start the game from Level 1 again?**
+
+**No.** You start exactly at **Level 10**, because that's where the "save" was made.
+
+**That is exactly how fork() works:**
+
+1. **The Copy:** The Child gets a perfect copy of the **entire** program (the "save file"). It has all the code from the beginning of main() to the end.
+    
+2. **The Execution:** The Child does **not** start from the first line of main(). It starts at the **Program Counter (PC)** location where the fork() happened.
+    
+3. **The Result:** The Child begins its life at the exact moment the fork() call returns.
+
+### Why does this happen? (Connecting to Slide 31)
+
+1. **The Registration:** The Parent calls atexit(cleanup). The OS marks a "note" in the Parent's process data: "When this process dies, run the cleanup function."
+    
+2. **The Clone:** When fork() happens, the Child is a **perfect clone**. It doesn't just copy the code; it copies the **"notes"** too.
+    
+3. **The Inheritance:** The Child now also has the "note" saying: "When I die, run the cleanup function."
+    
+4. **The Double Execution:**
+    
+    - The Child calls exit(0) → OS sees the note → **Cleanup runs once.**
+        
+    - The Parent calls exit(0) → OS sees the note → **Cleanup runs again.**
+        
+
+**Final Proof:**  
+If the child started from the beginning of main(), it would have called atexit(cleanup) a second time. But because it starts **after** the fork(), it simply inherits the registration that was already there.
+
+### Slide 32: Sharing a File Example
+
+This slide explains the one thing that is **NOT** separated during a fork(): **Open File Descriptors**.
+
+**1. The Concept**  
+As we saw in Slide 29, the Parent and Child have separate memory. If the Parent changes a variable, the Child doesn't see it. **However**, if the Parent opens a file before forking, the Child shares the **same open file pointer**.
+
+**2. The Workflow in the Code:**
+
+1. fopen("new_file.txt", "a+"): The Parent opens a file in "append" mode.
+    
+2. fork(): The Child is created. The Child now has its own copy of the file pointer fptr, but it points to the **same open file in the OS**.
+    
+3. **Writing:**
+    
+    - The Child writes: "Child writes.\n"
+        
+    - The Parent writes: "Parent writes.\n"
+        
+4. **The Result:** Both messages appear in the same file.
+    
+
+**3. The "File Offset" (The most important part):**  
+Because they share the same open file description in the kernel, they share the **file offset** (the "cursor" that tracks where the next byte is written).
+
+- If the Child writes 15 bytes, the cursor moves forward 15 bytes.
+    
+- When the Parent writes, it doesn't start at the beginning of the file; it starts from where the Child left off.
+    
+- **This prevents the processes from overwriting each other's data.** They work together to append to the same file.
+
+
+## page 33 :
+### Slide 33: Zombies: Half Alive, Half Dead
+
+This slide introduces a very strange concept in Linux: the **Zombie Process** (also called a **defunct** process).
+
+#### 1. What is a Zombie?
+
+In a normal world, when someone dies, they are gone. But in Linux, when a child process terminates (dies), it doesn't disappear completely. It enters a "Zombie" state.
+
+**Why?** Because the Parent might want to know how the child died. Did it finish successfully? Did it crash with an error? To store this "exit status," the OS keeps a tiny piece of the child's information (its PID and exit code) in the system process table.
+
+**A Zombie is a process that is dead, but still has an entry in the system table.**
+
+#### 2. What is "Reaping"?
+
+"Reaping" is the act of the Parent process acknowledging the child's death. When the Parent calls a function like wait(), it reads the child's exit status. At that exact moment, the OS says, "Okay, the parent knows now," and it finally deletes the zombie from the system table.
+
+#### 3. The Danger of Zombies
+
+If a parent is poorly written and never "reaps" its children, the system table fills up with zombies. Since the table has a limited size, too many zombies can prevent the computer from starting any new processes.
+
+#### 4. What if the Parent dies first?
+
+If the Parent dies without reaping the child, the child becomes an "orphan." Linux handles this by having a special process called **init** (PID 1), which is the "grandfather" of all processes. The init process automatically adopts all orphans and reaps them immediately so they don't become permanent zombies.
+
+|   |   |   |
+|---|---|---|
+|Term|Meaning|Analogy|
+|**Zombie**|A dead process waiting to be acknowledged.|A ghost waiting for a funeral.|
+
+## page 34 35 AND wait  :
+### Slide 34: Can parent and child synchronize?
+
+Since we now know that zombies are bad, we need a way to force the parent to wait for the child. This is called **Synchronization**.
+
+#### 1. The wait() System Call
+
+The most common way to synchronize is the wait() function.  
+**int wait(int *child_status)**
+
+- **What it does:** It tells the Parent: "Stop everything. Do not execute another line of code until one of your children terminates."
+    
+- **The "Suspension":** The Parent process is put to "sleep" by the OS. It consumes zero CPU power while waiting.
+    
+- **The Wake-up:** As soon as a child dies, the OS wakes up the Parent and gives it the **PID** of the child that just finished.
+    
+
+#### 2. child_status
+
+The *child_status part is a pointer. The OS uses this to write the "Exit Code" of the child (e.g., 0 for success, 1 for error) so the parent can read it.
+
+---
+
+### Slide 35: wait Example
+
+This slide shows the wait() function in action. Let's trace the execution of the code provided.
+
+**The Code Logic:**
+
+1. **Parent starts.**
+    
+2. **fork() happens.** Now we have a Parent and a Child.
+    
+3. **The if (fork() == 0) block:**
+    
+    - The **Child** enters this block and prints "HC: hello from child". Then the child reaches the end of the function and dies.
+        
+4. **The else block (Parent):**
+    
+    - The **Parent** prints "HP: hello from parent".
+        
+    - The Parent then hits **wait(&child_status)**.
+        
+    - **CRITICAL MOMENT:** The Parent stops here. It cannot move to the next line until the child is dead.
+        
+5. **The Finish:** Once the child dies, the Parent "wakes up" and prints "CT: child has terminated".
+    
+
+#### Explaining the Output Diagram (The "S" shape)
+
+Look at the diagram on the right:
+
+- **HP (Hello Parent):** The parent starts and prints.
+    
+- **Wait:** The parent stops.
+    
+- **HC (Hello Child):** While the parent is waiting, the child runs and prints.
+    
+- **Bye (Child):** The child finishes and dies.
+    
+- **CT (Child Terminated):** ONLY NOW does the parent wake up and print the final message.
+    
+- **Bye (Parent):** The parent finally finishes.
+    
+
+**The result:** Because of wait(), the output is **deterministic**. The "CT" message will **always** come after the "HC" message.
+
+---
+
+### Summary Comparison Table
+
+|                     |                                                  |                                                      |
+| ------------------- | ------------------------------------------------ | ---------------------------------------------------- |
+| Term                | Meaning                                          | Analogy                                              |
+| **Reaping**         | The parent calling wait() to clear the zombie.   | Holding the funeral to let the ghost go.             |
+| **wait()**          | Forcing the parent to stop until the child dies. | A parent waiting at the school gate for their child. |
+| **Synchronization** | Making processes coordinate their timing.        | A relay race (passing the baton).                    |
+
+### Slide 36: wait exit status
+
+In slide 34, we learned that wait() stops the parent. But as a programmer, you don't just want to know that a child died; you want to know why it died.
+
+#### 1. The child_status Integer
+
+When you call wait(&child_status), the OS doesn't just return a number. It writes a complex "bit-field" (a packed integer) into that variable. This integer contains multiple pieces of information:
+
+- Did the child exit normally?
+    
+- Did it crash (e.g., Segmentation Fault)?
+    
+- What was the exit code (the number in exit(n))?
+    
+
+Because this integer is packed with binary data, you cannot just print it. You must use **Macros** to "unpack" the data.
+
+#### 2. The Macros
+
+- **WIFEXITED(status)**: (Wait If Exited). This returns **TRUE** if the child terminated normally (i.e., it called exit() or returned from main). It returns **FALSE** if the child was killed by a signal (like a crash).
+    
+- **WEXITSTATUS(status)**: This extracts the **actual exit code**. If the child called exit(100), this macro will return 100.
+    
+
+#### 3. The fork10() Example
+
+In the code, the parent forks
+
+```
+NN
+```
+
+children. Then it enters a second loop to reap them.
+
+- It calls wait(&child_status).
+    
+- It uses WIFEXITED to check if the death was "clean."
+    
+- If clean, it uses WEXITSTATUS to print the specific exit code the child sent back.
+
+### Part 1: The Setup (Variables)
+
+codeC
+
+```
+pid_t pid[N];
+int i;
+int child_status;
+```
+
+- **pid[N]**: This is an array of Process IDs. The parent needs this list so it can remember exactly which children it created.
+    
+- **child_status**: This is a "placeholder" integer. When a child dies, the OS will write the child's exit information into this variable.
+    
+
+---
+
+### Part 2: The Creation Phase (The First Loop)
+
+codeC
+
+```
+for (i = 0; i < N; i++)
+    if ((pid[i] = fork()) == 0)
+        exit(100 + i); /* Child */
+```
+
+This loop creates
+
+```
+NN
+```
+
+children. Let's look at the logic inside:
+
+1. **pid[i] = fork()**: The parent calls fork(). The resulting Process ID is saved into the array pid.
+    
+2. **if (... == 0)**: This is the "split."
+    
+    - **For the Parent:** The if is **False**. The parent ignores the exit line and goes back to the top of the loop to create the next child.
+        
+    - **For the Child:** The if is **True**. The child enters the block.
+        
+3. **exit(100 + i)**: This is the most important part. The child doesn't just die; it dies with a **unique status code**.
+    
+    - If it's the 1st child (
+        
+        ```
+        i=0i=0
+        ```
+        
+        ), it exits with **100**.
+        
+    - If it's the 2nd child (
+        
+        ```
+        i=1i=1
+        ```
+        
+        ), it exits with **101**.
+        
+    - ...and so on.
+        
+    - **This is like the child leaving a specific note on the table for the parent to find later.**
+        
+
+---
+
+### Part 3: The Reaping Phase (The Second Loop)
+
+After creating all
+
+```
+NN
+```
+
+children, the parent enters a new loop to "reap" them (clean up the zombies).
+
+codeC
+
+```
+for (i = 0; i < N; i++) {
+    pid_t wpid = wait(&child_status);
+```
+
+1. **wait(&child_status)**: The parent stops and waits for **any** child to die.
+    
+2. **wpid**: When a child dies, wait returns that child's PID. The parent now knows which child just finished.
+    
+3. **&child_status**: The OS takes the exit note left by the child (e.g., "102") and writes it into the child_status variable.
+    
+
+---
+
+### Part 4: Unpacking the Status (The Macros)
+
+As we discussed in the theory, child_status is a "packed" integer. The parent cannot read it directly; it must use **Macros**.
+
+codeC
+
+```
+if (WIFEXITED(child_status))
+    printf("Child %d terminated with exit status %d\n", 
+            wpid, WEXITSTATUS(child_status));
+else
+    printf("Child %d terminate abnormally\n", wpid);
+```
+
+1. **WIFEXITED(child_status)**: The parent asks: "Did this child die normally (via exit) or did it crash?"
+    
+2. **WEXITSTATUS(child_status)**: If it died normally, this macro "unpacks" the integer to find the actual number the child left (the 100 + i value).
+    
+3. **The else block**: If the child crashed (e.g., a Segmentation Fault), WIFEXITED returns False, and the parent prints that the child terminated abnormally.
+    
+
+---
+
+### Summary of the Logic Flow
+
+|   |   |   |   |
+|---|---|---|---|
+|Step|Who is acting?|Action|Result|
+|**1**|Parent|Loop<br><br>```<br>NN<br>```<br><br>times<br><br>```<br>→→<br>```<br><br>fork()|```<br>NN<br>```<br><br>children are created.|
+|**2**|Children|exit(100 + i)|Children die and leave a unique exit code.|
+|**3**|Parent|wait(&child_status)|Parent catches a dead child and gets its status.|
+|**4**|Parent|WIFEXITED & WEXITSTATUS|Parent translates the binary status into a human-readable number.|
+
+**One final detail:** The order of the prints in the second loop will be **random**. Because the parent uses wait(), it reaps whichever child happens to die first, not necessarily in the order they were created (
+
+```
+0,1,2...0,1,2...
+```
+
+).
+
+### 1. The "Death" is not immediate (exit)
+
+When a child process calls exit(100 + i), it doesn't just vanish from the computer's memory instantly.
+
+The OS allows the child to stop executing code, but it **keeps the child's "ghost"** in the system's Process Table. This "ghost" is called a **Zombie Process**.
+
+**Why does the OS do this?**  
+Because the parent might want to know: "Did my child finish the job? Did it crash? What was the result?" The OS stores the exit status (the 100 + i value) in that Zombie entry so the parent can read it whenever it is ready.
+
+---
+
+### 2. The "Cleaning" process (wait)
+
+This is where wait() comes in. Even though the children have already called exit(), they are still taking up a tiny bit of space in the OS Process Table as Zombies.
+
+When the parent calls wait():
+
+1. **The OS checks:** "Is any of this parent's children dead?"
+    
+2. **The OS delivers:** "Yes, Child #5 is dead. Here is the exit status he left behind: 105."
+    
+3. **The OS deletes:** Now that the parent has received the message, the OS finally deletes the Zombie from the Process Table.
+    
+
+**This act of deleting the zombie is called "Reaping."**
+
+---
+
+### 3. What happens if you DON'T call wait()?
+
+If the children all call exit() but the parent **never** calls wait(), you get a **Zombie Apocalypse**.
+
+- The children are dead, but their entries remain in the system table.
+    
+- If your program creates thousands of children and never calls wait(), the Process Table will fill up.
+    
+- Once the table is full, your computer **cannot start any new processes**. You won't be able to open a new terminal, start a browser, or even run ls. The system will freeze or crash.
+    
+
+---
+
+### Summary: The Two Sides of the Coin
+
+|   |   |   |   |
+|---|---|---|---|
+|Action|Who does it?|Purpose|Result|
+|**exit(status)**|The Child|"I am finished. Here is my result."|Process becomes a **Zombie**.|
+|**wait()**|The Parent|"I'm ready to see the result and clean up."|Process is **Deleted (Reaped)**.|
+
+**To answer your question directly:**  
+wait() doesn't "make" the child exit (the child already did that). Instead, wait() **collects the result** and **cleans up the system memory** so the computer doesn't crash from too many zombies.
+
+### Summary of the logic you just tested:
+
+1. **exit(100+i)**    →    The child dies and becomes a **Zombie**, leaving a number behind.
+2. **wait(&child_status)**   →   The parent pauses and waits for a zombie to appear.
+3. **WIFEXITED**   →    The parent checks: "Did this zombie die naturally?"
+4. **WEXITSTATUS**    →    The parent reads: "What was the number the zombie left behind?"
+
+
+### The Problem with wait()
+
+As you saw in your last experiment, wait() is a "blind" function. It says: "I don't care which child dies; just tell me when **any** of them are finished."
+
+Imagine you have 3 children:
+
+- **Child A** is doing a quick task (1 second).
+    
+- **Child B** is doing a medium task (5 seconds).
+    
+- **Child C** is doing a huge task (1 hour).
+    
+
+If you use wait(), you can only reap them in the order they die. You can't say, "I want to make sure Child C (the big task) is finished before I move on," because wait() might return Child A first, then Child B, and you'd still be waiting for C.
+
+**waitpid() is the solution. It allows the parent to be specific.**
+
+---
+
+### 1. The Function Signature
+
+pid_t waitpid(pid_t pid, int *status_ptr, int options);
+
+Think of this function as a **Request Form** you send to the OS. You fill out three fields:
+
+1. **pid (The Target):** Who am I waiting for?
+    
+    - If you put a **specific PID** (e.g., 897), the parent says: "I only care about Child 897. Ignore everyone else."
+        
+    - If you put **-1**, the parent says: "I don't care who it is, just give me whoever dies first." (This makes waitpid behave exactly like wait).
+        
+2. **status_ptr (The Note):** Where should the OS put the exit status?
+    
+    - Just like wait(), this is where the WIFEXITED and WEXITSTATUS info goes.
+        
+3. **options (The "How"):** How should I wait?
+    
+    - This is the most powerful part of the function.
+        
+
+---
+
+### 2. The "Options" (The Superpowers of waitpid)
+
+#### - **0 (Default):** The parent "blocks" (sleeps) until the child dies.
+
+its like wait use block ,it doesn't do anything while waiting child to dies 
+
+The options argument changes the behavior of the function. The most important one is **WNOHANG**.
+
+#### WNOHANG (Wait No Hang)
+
+Normally, wait() is a **blocking** call. This means the Parent "goes to sleep" and stops everything until a child dies.
+
+**WNOHANG turns waitpid into a "non-blocking" call.**  
+Instead of sleeping, the Parent just "checks in" on the child. It's like checking your email:
+
+- **If the child is dead:** waitpid returns the PID of the child and reaps it.
+    
+- **If the child is still running:** waitpid does **NOT** sleep. It returns **0 immediately** and lets the Parent keep running its own code.
+    
+
+**Why is this useful?**  
+It allows the Parent to do other work (like updating a loading bar or checking for user input) while occasionally checking: "Hey, is Child C done yet?"
+
+#### WUNTRACED and WCONTINUED
+
+These are for advanced process control:
+
+- **WUNTRACED**: Tells the parent if a child was **stopped** (for example, if the user pressed Ctrl+Z in the terminal).
+    
+- **WCONTINUED**: Tells the parent if a stopped child has **resumed** running.
+    
+
+---
+
+### 3. The "Wait Set"
+
+The slide mentions a **"Wait Set."**
+
+A Wait Set is simply a "Watch List" maintained by the OS. When you use waitpid with certain options, you are telling the OS: "Put these specific children on my watch list. Let me know when any of them change state."
+
+---
+
+### Summary Table: wait() vs. waitpid()
+
+|   |   |   |
+|---|---|---|
+|Feature|wait()|waitpid()|
+|**Target**|Any child|A specific child (or any)|
+|**Blocking**|Always blocks (sleeps)|Can be non-blocking (WNOHANG)|
+|**Control**|Simple / Automatic|Precise / Manual|
+|**Analog**|"Wake me up when someone arrives."|"Check if John has arrived. If not, I'll keep working."|
+### 2. The waitpid() approach (Slide 38) = "Numbered Tickets"
+
+In fork11, the parent uses a loop to call waitpid() for a **specific PID**. The parent is saying:  
+"I have a list of PIDs. I am going to wait for Child N−1 specifically. I don't care if Child 0 is already dead; I am not moving until Child N−1 is finished."
+
+**Here is exactly what happens in the fork11 loop:**
+
+1. **Loop starts at** **`i=N−1`** **:** The parent calls waitpid(pid[N-1], ...).
+    
+2. **The Block:** Even if Child 0, 1, 2, and 3 are already zombies, the parent **STAYS ASLEEP**. It refuses to wake up because Child N−1 is still running.
+    
+3. **The Wake-up:** Only when Child N−1 finally dies does the parent wake up and reap it.
+    
+4. **Next in line:** Now the parent moves to i=N−2 . It says: "Now I'm waiting for Child N−2 ." Since Child N−2 is probably already a zombie, the parent reaps them **instantly** and moves to the next one.
+    
+
+---
+
+### Summary Comparison: Which one "waits for all"?
+
+|   |   |   |
+|---|---|---|
+|Feature|wait() (Slide 36)|waitpid() (Slide 38)|
+|**Do they wait for all?**|Yes (by the end of the loop).|Yes (by the end of the loop).|
+|**Who wakes the parent?**|The **first** child to die.|The **specific** child the parent is asking for.|
+|**Order of Reaping**|**Random.** Whoever is fastest.|**Fixed.** In the order the programmer wrote the loop.|
+|**The "Wait" experience**|Parent wakes up frequently as children die one by one.|Parent might sleep for a long time waiting for the last child, even if others are dead.|
+
+**In short:**
+
+- wait() is like a doctor seeing patients as they arrive in the waiting room.
+    
+- waitpid() is like a doctor who refuses to see anyone until the patient with **Ticket #10** arrives, even if Patients #1 through #9 are already sitting there.
+
+## page 39 :
+### Slide 39: Putting a process to sleep
+
+This slide explains how a process voluntarily gives up the CPU. In a multitasking system, it is inefficient for a process to "busy-wait" (running a loop that does nothing while waiting for something to happen) because it wastes CPU cycles. Instead, the process asks the OS to put it in a "Sleeping" state.
+
+#### 1. The sleep() function
+
+unsigned int sleep(unsigned int secs);
+
+- **How it works:** When a process calls sleep, the OS removes the process from the "Ready Queue" (the list of processes waiting for the CPU) and puts it into a "Waiting Queue."
+    
+- **The Timer:** The OS sets a timer. When the timer expires, the OS moves the process back into the "Ready Queue" so it can resume execution.
+    
+- **Interruption:** If a signal (like a Ctrl-C or a hardware interrupt) wakes the process up before the time is up, sleep() returns the number of seconds that were remaining.
+    
+
+#### 2. The pause() function
+
+int pause(void);
+
+- **How it works:** Unlike sleep, pause() does not use a timer. It tells the OS: "Put me to sleep indefinitely. Do not wake me up until something happens."
+    
+- **The Trigger:** The process will stay asleep until it receives a **signal** (an asynchronous event).
+    
+- **Use Case:** This is commonly used in "Daemon" processes (background services) that spend 99% of their time doing nothing, waiting for a specific signal to wake them up and perform a task.
+
+
+##  page 40 execve() :
+
+### Slide 40: The "Brain Swap" (execve)
+
+Until now, you have used fork(), which **clones** a process. But what if you want to run a totally different program (like opening Chrome or running ls)? You use execve.
+
+#### 1. The Technical Process (The Overwrite)
+
+When a process calls execve, it isn't starting a new process. Instead, it is **replacing itself**. The OS does a "Brain Swap":
+
+1. **Wipe:** The OS wipes the current process's **Code** (text), **Data** (globals), and **Stack** (local variables).
+    
+2. **Load:** The OS loads a new binary file (the one you specified in filename) into that same memory space.
+    
+3. **Reset:** The CPU's Program Counter (PC) is reset to the start of the new program's main() function.
+    
+
+#### 2. What survives the swap?
+
+Some things are NOT wiped. These are the "Identity" markers:
+
+- **The PID:** The process keeps its original Process ID.
+    
+- **Open Files:** If the process had a file open, it stays open. (This is how Linux handles "output redirection").
+    
+
+#### 3. The "Point of No Return"
+
+Because the original code is deleted from RAM, **execve never returns** if it works. If you write a line of code after execve, it will **never** be executed because the code that was supposed to run it has been erased and replaced by the new program.
+
+---
+
+### Slide 41: The "Fork-Exec" Pattern (The Industry Standard)
+
+If execve replaces the process, why do we almost always see fork() and execve() used together?
+
+**The Problem:** If the Shell (your terminal) called execve("ls") directly, the Shell would be replaced by ls. Once ls finished, the Shell would be gone, and your terminal would close!
+
+**The Solution: The Fork-Exec Pattern**
+
+1. **fork()**: The Shell clones itself. Now we have a Parent (Shell) and a Child (Clone).
+    
+2. **execve()**: The **Child** calls execve to replace its code with ls.
+    
+3. **wait()**: The Parent (Shell) stays alive and waits for the Child to finish. Once the Child dies, the Parent continues and gives you a new command prompt.
+    
+
+#### Understanding argv and envp (The Arrays)
+
+execve requires two arrays of pointers:
+
+- **argv (Argument Vector):** A list of strings. argv[0] is always the program name. The list **must** end with a NULL pointer so the OS knows where to stop reading.
+    
+- **envp (Environment Pointer):** A list of "KEY=VALUE" strings (e.g., USER=student). This also **must** end with NULL.
+    
+
+---
+
+### Slide 42: Environment Variables (getenv, setenv)
+
+Environment variables are like "global settings" for a process. They are stored as a list of strings in the envp array.
+
+1. **getenv("NAME")**: Searches the list for a string starting with "NAME=". If it finds USER=john, it returns a pointer to the value "john".
+    
+2. **setenv("NAME", "VALUE", overwrite)**: Adds a new setting or changes an existing one.
+    
+3. **unsetenv("NAME")**: Deletes a setting.
+
+### What you will see and why:
+
+1. **The getenv part:** It prints your Linux username.
+    
+2. **The fork part:** It creates a child.
+    
+3. **The execve part:** The child suddenly transforms into the ls program. You will see a list of your files printed to the screen.
+    
+4. **The wait part:** The parent stays alive and prints the final message **after** the file list is done.
+    
+
+**Crucial Observation:** Notice that the printf("This will only print if execve FAILS!") never appears. This proves the "Point of No Return" from Slide 40.
+
+### 1. setenv("MY_VAR", "Hello_Systems_Programming", 1);
+
+#### "Where does the change happen?"
+
+The change happens in a special area of the process's memory called the **Environment Block**.
+
+Every process has a dedicated region of memory that stores "Key=Value" pairs (like USER=student or PATH=/bin). When you call setenv, the OS finds the environment block for your process and:
+
+1. Checks if MY_VAR already exists in that list.
+    
+2. If it doesn't, it adds a new string "MY_VAR=Hello_Systems_Programming" to the end of the list.
+    
+3. If it does, it updates the value.
+    
+
+#### "Why use 1 and what is the difference?"
+
+The 1 is the overwrite flag. It is a boolean (True/False).
+
+- **If you use 1 (True):** It means "If MY_VAR already exists, **replace** the old value with the new one."
+    
+- **If you use 0 (False):** It means "If MY_VAR already exists, **do nothing**. Keep the old value."
+    
+
+**Example:**  
+If the environment already had MY_VAR=OldValue:
+
+- setenv("MY_VAR", "NewValue", 1)  →   Result: MY_VAR=NewValue
+    
+- setenv("MY_VAR", "NewValue", 0)  →    Result: MY_VAR=OldValue
+    
+
+---
+
+### 2. char *args[] = {"/bin/ls", "-l", NULL};
+
+#### "What is happening here?"
+
+You are creating an **array of strings**. But in C, a "string" is actually just a char * (a pointer to the first character of the text). So, char *args[] is an **array of pointers**.
+
+**Why these three specific items?**
+
+1. **"/bin/ls"**: By convention, the first argument (args[0]) must be the **name or path of the program** you are running. The ls program expects its own name as the first argument.
+    
+2. **"-l"**: This is a flag. It tells the ls program: "Don't just list the files; show me the long format (size, date, permissions)."
+    
+3. **NULL**: This is the most important part. **The execve function has no way of knowing how many arguments you provided.** It doesn't know if you sent 2 arguments or 200. It keeps reading the array until it hits a NULL pointer. The NULL acts as a **Stop Sign**. If you forget the NULL, execve will keep reading random memory until the program crashes.
+    
+
+---
+
+### 3. extern char **environ;
+
+This is the most difficult part because it involves **Double Pointers**.
+
+#### "What is extern?"
+
+extern tells the compiler: "The variable environ is not defined inside this file. It is defined somewhere else (in the C Standard Library). Just trust me that it exists and let me use it."
+
+#### "Why two pointers (**)?"
+
+To understand char **, you have to build it from the bottom up:
+
+1. **char**: A single letter (e.g., 'H').
+    
+2. **char ***: A pointer to a character. In C, this is how we represent a **String** (a sequence of letters).
+    
+    - Example: "USER=john" is a char *.
+        
+3. **char ****: A pointer to a pointer. This is how we represent a **List of Strings**.
+    
+    - The first pointer points to the **array of pointers**.
+        
+    - Each pointer in that array then points to an **actual string**.
+        
+
+**Visualizing environ in Memory:**
+
+codeText
+
+```
+environ (char **)
+      |
+      v
+[ Pointer 0 ]  --->  "USER=droh\0"    (char *)
+[ Pointer 1 ]  --->  "PATH=/bin\0"    (char *)
+[ Pointer 2 ]  --->  "HOME=/home\0"   (char *)
+[ Pointer 3 ]  --->  NULL             (The Stop Sign)
+```
+
+**In Summary:**
+
+- char  →   a letter.
+- 
+- char *  →   a string (one environment variable).
+    
+- char **   →   the whole list of all environment variables.
+    
+
+When you pass environ to execve, you are handing the new program the entire "settings list" so it knows who the user is and where the system files are.
