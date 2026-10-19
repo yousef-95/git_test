@@ -249,3 +249,179 @@ When you do P(A)⋅P(O∣A) , you are finding the **Intersection** (The "AND").
 | Method        | Calculation                    | Result     | Meaning                                            |
 | **Wrong Way** | ```∑P(O∣Agency)```             | ```0.35``` | Adding "local" rates (makes no sense).             |
 | **Right Way** | ```∑[P(Agency)⋅P(O∣Agency)]``` | ```0.12``` | Adding "global" contributions (Total Probability). |
+
+
+### **1. Set Operations (Foundations for Probability)**
+
+- **Union ($A \cup B$):** All elements that are in set A, set B, or both.
+    
+      
+    
+- **Intersection ($A \cap B$):** Elements common to both set A and set B.
+    
+      
+    
+- **Complement ($A^c$):** All elements in the sample space $S$ that are not in set A.
+    
+      
+    
+- **Mutually Exclusive Events:** Two events are mutually exclusive if they have no elements in common:
+    
+      
+    
+    $$A \cap B = \emptyset$$
+    
+
+### **2. Basic Probability Rules**
+
+- **Rule 1 (Range of Probability):** The probability of any event $A$ must be a non-negative real number less than or equal to 1.
+    
+      
+    
+    $$0 \le P(A) \le 1$$
+    
+- **Rule 2 (Probability of Sample Space):** The probability of the entire sample space is always 1.
+    
+      
+    
+    $$P(S) = 1$$
+    
+- **Rule 3 (Additivity):** If events $A_1, A_2, A_3, \dots$ are mutually exclusive, the probability of any one of them occurring is the sum of their individual probabilities:
+    
+      
+    
+    $$P(A_1 \cup A_2 \cup A_3 \cup \dots) = P(A_1) + P(A_2) + P(A_3) + \dots$$
+    
+- **Rule 4 (Complement Rule):** The probability that an event does not occur is 1 minus the probability that it does occur.
+    
+      
+    
+    $$P(A^c) = 1 - P(A)$$
+    
+- **Rule 5 (Subset Rule):** If event $A$ is a subset of event $B$ ($A \subseteq B$), then:
+    
+      
+    
+    $$P(A) \le P(B)$$
+    
+- **Rule 6 (General Addition Rule):** For any two events $A$ and $B$ in a sample space $S$:
+    
+      
+    
+    $$P(A \cup B) = P(A) + P(B) - P(A \cap B)$$
+    
+
+### **3. Conditional Probability & Multiplication**
+
+- **Conditional Probability Formula:** The probability of event $B$ occurring given that event $A$ has already occurred (where $P(A) \neq 0$):
+    
+      
+    
+    $$P(B\vert{}A) = \frac{P(A \cap B)}{P(A)}$$
+    
+- **Multiplication Rule (Theorem):** The probability that both $A$ and $B$ occur is the product of the probability of $A$ and the conditional probability of $B$ given $A$.
+    
+      
+    
+    $$P(A \cap B) = P(A) \cdot P(B\vert{}A)$$
+    
+    _(Alternatively, if $P(B) \neq 0$: $P(A \cap B) = P(B) \cdot P(A\vert{}B)$)_
+    
+      
+    
+
+### **4. Independence**
+
+- **Definition of Independent Events:** Two events $A$ and $B$ are independent if and only if:
+    
+      
+    
+    $$P(A \cap B) = P(A) \cdot P(B)$$
+    
+
+### **5. Rule of Total Probability**
+
+- **Simple Case (Binary Partition):**
+    
+      
+    
+    $$P(A) = P(B) \cdot P(A\vert{}B) + P(B') \cdot P(A\vert{}B')$$
+    
+- **General Theorem:** If events $B_1, B_2, \dots, B_k$ constitute a partition of the sample space $S$ and $P(B_i) \neq 0$:
+    
+      
+    
+    $$P(A) = \sum_{i=1}^{k} P(A \cap B_i) = \sum_{i=1}^{k} P(B_i) \cdot P(A\vert{}B_i)$$
+    
+
+### **6. Bayes' Theorem**
+
+- **Theorem:** Used to find the "inverse" conditional probability. If $B_1, \dots, B_k$ is a partition of $S$ and $P(A) \neq 0$:
+    
+      
+    
+    $$P(B_r\vert{}A) = \frac{P(B_r \cap A)}{P(A)} = \frac{P(B_r) \cdot P(A\vert{}B_r)}{\sum_{i=1}^{k} P(B_i) \cdot P(A\vert{}B_i)}$$
+    
+    _(for $r = 1, 2, \dots, k$)_
+
+
+### **1. Is $P(A \text{ AND } B) = P(B \text{ AND } A)$?**
+
+- **Yes.** In mathematics, "AND" (the intersection $\cap$) is commutative. This means the order doesn't matter. Whether you say "the probability that it is raining AND cold" or "the probability that it is cold AND raining," you are describing the exact same event.
+    
+    $$P(A \cap B) = P(B \cap A)$$
+    
+
+### **2. Can we use either formula?**
+
+- **Yes**, you can use either approach to find the answer. However, the notation in the original prompt had a slight error:
+    
+    - **Wrong:** $P(A) \times P(A\vert{}B)$ _(This doesn't make sense because you are multiplying the probability of $A$ by the probability of $A$ again)._
+        
+    - **Correct:** $P(B) \times P(A\vert{}B)$
+        
+
+The two correct ways to calculate the intersection are:
+
+- **Option 1:** $P(A) \cdot P(B\vert{}A)$ $\rightarrow$ (Prob. of $A$ happening, then prob. of $B$ happening given $A$)
+    
+- **Option 2:** $P(B) \cdot P(A\vert{}B)$ $\rightarrow$ (Prob. of $B$ happening, then prob. of $A$ happening given $B$)
+    
+
+Because $P(A \cap B) = P(B \cap A)$, these two formulas will always give you the exact same result.
+
+### **💡 Practical Example: Drawing Cards**
+
+Imagine a standard deck of 52 cards:
+
+- **Event A:** Drawing a King
+    
+- **Event B:** Drawing a Red card
+    
+
+We want to find the probability of drawing a card that is both a King AND Red.
+
+- **Using Option 1 ($P(A) \cdot P(B\vert{}A)$):**
+    
+    - $P(A)$ [Prob. it's a King]: $\frac{4}{52}$
+        
+    - $P(B\vert{}A)$ [Prob. it's Red, given we know it's a King]: $\frac{2}{4}$ _(There are 4 kings, 2 are red)_
+        
+    - **Calculation:** $\frac{4}{52} \cdot \frac{2}{4} = \frac{8}{208} = \frac{1}{26}$
+        
+- **Using Option 2 ($P(B) \cdot P(A\vert{}B)$):**
+    
+    - $P(B)$ [Prob. it's Red]: $\frac{26}{52}$
+        
+    - $P(A\vert{}B)$ [Prob. it's a King, given we know it's Red]: $\frac{2}{26}$ _(There are 26 red cards, 2 are kings)_
+        
+    - **Calculation:** $\frac{26}{52} \cdot \frac{2}{26} = \frac{52}{1352} = \frac{1}{26}$
+        
+
+### **Summary: Which one should you use?**
+
+In a test or a real-world problem, you choose based on what information you are given:
+
+- If the problem tells you $P(A)$ and $P(B\vert{}A)$, use **Option 1**.
+    
+- If the problem tells you $P(B)$ and $P(A\vert{}B)$, use **Option 2**.
