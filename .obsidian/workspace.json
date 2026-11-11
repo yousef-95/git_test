@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Third year/STATISTICS FOR SCIENCE AND ENGINEERING STAT0480201.md",
+                "file": "third year/320.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "STATISTICS FOR SCIENCE AND ENGINEERING STAT0480201"
+              "title": "320"
             }
           }
         ],
@@ -207,6 +207,7 @@
   },
   "active": "f0afa3d2082c11c0",
   "lastOpenFiles": [
+    "third year/STATISTICS FOR SCIENCE AND ENGINEERING STAT0480201.md",
     "README.md",
     "Third year/STATISTICS FOR SCIENCE AND ENGINEERING STAT0480201.md",
     "Third year/310.md",
